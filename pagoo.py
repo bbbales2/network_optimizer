@@ -9,7 +9,7 @@ import cvxpy as cvx
 #   the integrals of the cost functions at each edge in the network, and the
 #   cost function times the flow at each edge in the network
 
-edges = [(0, 1), (0, 2), (1, 3), (2, 3)]
+edges = [(0, 1), (0, 2), (1, 3), (2, 3), (1, 2)]
 #edges = [(0, 1), (0, 1)]
 
 start = 0
@@ -17,15 +17,16 @@ end = 3
 
 # We encode what function to use for the cost in the global and Nash problems
 #   by providing for each edge an index into a list of functions (edgeFuncs and edgeIntFuncs)
-edgeTypes = [0, 1, 1, 0]
+edgeTypes = [0, 1, 1, 0, 2]
+#edgeTypes = [0, 1]
 
 # For each edge there is flow * c(flow). These are the edgeFuncs. The global
 #   optimizer minimizes the sum of these functions
-edgeFuncs = [lambda x : x**2, lambda x : x]
+edgeFuncs = [lambda x : x**2, lambda x : x, lambda x : 0]
 
 # For each edge there is a function integral(c(flow)) that represents the cost
 #   that the Nash flow will minimize
-edgeIntFuncs = [lambda x : 0.5 * x**2, lambda x : x]
+edgeIntFuncs = [lambda x : 0.5 * x**2, lambda x : x, lambda x : 0]
 
 ####
 
@@ -39,7 +40,7 @@ A = numpy.zeros((len(nodes), len(edges)))
 for e, edge in enumerate(edges):
     A[edge[0], e] = -1
     A[edge[1], e] = 1
-    
+
 b = numpy.zeros(len(nodes))
 
 b[start] = -1
@@ -53,6 +54,7 @@ for i, eType in enumerate(edgeTypes):
     nash_obj += edgeIntFuncs[eType](x[i])
     global_obj += edgeFuncs[eType](x[i])
 
+
 nash_obj = cvx.Minimize(nash_obj)
 global_obj = cvx.Minimize(global_obj)
 
@@ -64,12 +66,27 @@ prob = cvx.Problem(nash_obj, constraints)
 prob.solve()
 print "Nash solution"
 print "status:", prob.status
-print "optimal value", prob.value
-print "optimal var", x.value, y.value
+#print "optimal value", prob.value
+print "optimal var", x.value
+
+ntotal = 0.0
+for i, f in enumerate(x.value):
+    ntotal += edgeFuncs[edgeTypes[i]](f)
+
+print 'Value: ', ntotal
+print ''
 
 prob = cvx.Problem(global_obj, constraints)
 prob.solve()
 print "Global solution"
 print "status:", prob.status
-print "optimal value", prob.value
-print "optimal var", x.value, y.value
+print "optimal var", x.value
+
+gtotal = 0.0
+for i, f in enumerate(x.value):
+    gtotal += edgeFuncs[edgeTypes[i]](f)
+
+print 'Value: ', gtotal
+print ''
+
+print 'Price of Anarchy: ', ntotal / gtotal
