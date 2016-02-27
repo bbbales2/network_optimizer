@@ -35,8 +35,13 @@ def runRound(G, start, end, cost, tax, bias, N):
     aCur ={} # create 
     aPrev =None
     ct=0
+    history=[]
+    backtrack =False
     while ((initial or aCur != aPrev) and ct <100):
         ct+=1
+        if aCur in history:
+            backtrack=True
+        history.append(dict(aCur))
         aPrev = dict(aCur)
 
 
@@ -62,7 +67,6 @@ def runRound(G, start, end, cost, tax, bias, N):
                         if (eo != en):
                             sorted(G.edge[en[0]][en[1]].values(), key = lambda x : x['c'])[0]['f'] += 1.0 / N
                             sorted(G.edge[eo[0]][eo[1]].values(), key = lambda x : x['c'])[0]['f'] -= 1.0 / N
-                            print 'changed'
             else:
                 for n1, n2 in pEdge: #loop over the path increasing flow
                     sorted(G.edge[n1][n2].values(), key = lambda x : x['c'])[0]['f'] += 1.0 / N
@@ -89,6 +93,7 @@ def runRound(G, start, end, cost, tax, bias, N):
     print '----'
     print u"Total cost: {0} \u00B1 {1}".format(numpy.mean(totalc), numpy.std(totalc))
     print 'Total iterations:', ct
+    print 'The game backtracked and therefore is not gaurnteed to be NE:', backtrack
 
 bias =numpy.random.exponential
 #bias = lambda : 0
