@@ -4,24 +4,27 @@ import numpy
 import networkx
 
 
-
-def runRound(G, start, end, cost, tax, bias, N):
-
+def runRound(edges, start, end, cost, tax, biases, N, debug = False):
     # For each edge there is flow * c(flow). These are the edgeFuncs. The global
     #   optimizer minimizes the sum of these functions
-
 
     initial =True
 
     preferences = {}
     edgeResults = {}
-    totals = []
+
+    # Add ids to every edge so that biases can be indexed
+    for i, (n1, n2, edgeData) in enumerate(edges):
+        edgeData['id'] = i
+
+    G = networkx.MultiGraph()
+    G.add_edges_from(edges)
 
     for i in range(N):
         for n1 in G.edge:
             for n2 in G.edge[n1]:
                 for en in G.edge[n1][n2]:
-                    preferences[(i, n1, n2, en)] = bias()
+                    preferences[(i, n1, n2, en)] = biases[G.edge[n1][n2][en]['id']](i)
 
     #zero the graph edges to start
     for n1 in G.edge:
@@ -37,9 +40,11 @@ def runRound(G, start, end, cost, tax, bias, N):
     ct = 0
     history = []
     backtrack = False
-    while ((initial or aCur != aPrev) and ct < 100):
+    totalc = 0.0
+    edgeResults = {}
+    maxIters = 10
+    while ((initial or aCur != aPrev) and ct < maxIters):
         ct += 1
-        print 'hi'
         if aCur in history:
             backtrack=True
         history.append(dict(aCur))
@@ -56,7 +61,7 @@ def runRound(G, start, end, cost, tax, bias, N):
                 for n2 in G.edge[n1]:
                     for en in G.edge[n1][n2]:
                         G.edge[n1][n2][en]['c'] = cost[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
-                                            tax[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
+                                            tax[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) - \
                                             preferences[(i, n1, n2, en)]
 
             path = networkx.shortest_path(G, source = start, target = end, weight = 'c')
@@ -77,49 +82,52 @@ def runRound(G, start, end, cost, tax, bias, N):
                 G.edge[n1][n2][betterEdgeIdx]['f'] += 1.0 / N
 
             totalc = 0.0
+            edgeResults = {}
             for n1, n2 in set(G.edges()):
                 for edgeIdx, edgeData in G.edge[n1][n2].items():
                     key = (n1, n2, edgeIdx)
 
-                    edgeResults[key] = edgeData['f']
+                    edgeResults[key] = edgeData['f'], edgeData['t']
                     totalc += edgeData['f'] * cost[edgeData['t']](edgeData['f'])
 
-            for (n1, n2, t), f in edgeResults.items():
-                print u"Edge ({0}, {1}), type {2}, flow {3}".format(n1, n2, t, f)
+            if debug:
+                for (n1, n2, t), (f, t) in edgeResults.items():
+                    print u"Edge ({0}, {1}), type {2}, flow {3}".format(n1, n2, t, f)
 
-            print '----'
-            print u"Total cost: {0}".format(numpy.mean(totalc))
-            print '****'
+                print '----'
+                print u"Total cost: {0}".format(numpy.mean(totalc))
+                print '****'
+
         initial = False
-        print 'Total iterations:', ct
 
-    print aCur, aPrev
-    print initial
-    print aCur != aPrev
-    print ct
-    if backtrack:
-        print "Game is not potential game"
-    else:
-        print "No backtracking detected"
+        if debug:
+            print 'Total iterations:', ct
 
-bias = lambda : 0#numpy.random.exponential
-#bias = lambda : 0
-G = networkx.MultiGraph()
-edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-     (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
-     (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
-     (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-     (1, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 2 })]
-#edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-#         (0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 1 })]
+    if debug:
+        if backtrack:
+            print "Game is not potential game"
+        else:
+            print "No backtracking detected"
 
-G.add_edges_from(edges)
+    return totalc, edgeResults, backtrack, (ct < maxIters)
 
-cost = [lambda x : x, lambda x : 1.00, lambda x : 0]
-tax = [lambda x : 0, lambda x : 0, lambda x : 0]
+if __name__ == '__main__':
+    #bias = lambda : 0
+    #edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
+    #     (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+    #     (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+    #     (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
+    #     (1, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 2 })]
+    edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
+             (0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 1 })]
 
-start = 0
-end = 3
+    bias = [lambda i : 0, lambda i : 1.0]#numpy.random.exponential
 
-N = 100 #number of players
-runRound(G, start, end, cost, tax, bias, N)
+    cost = [lambda x : x, lambda x : 1.00, lambda x : 0]
+    tax = [lambda x : 0, lambda x : 0, lambda x : 0]
+
+    start = 0
+    end = 1
+
+    N = 100 #number of players
+    print runRound(edges, start, end, cost, tax, bias, N, True)
