@@ -61,7 +61,7 @@ def runRound(edges, start, end, cost, tax, biases, N, debug = False):
                 for n2 in G.edge[n1]:
                     for en in G.edge[n1][n2]:
                         G.edge[n1][n2][en]['c'] = cost[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
-                                            tax[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) - \
+                                            tax[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
                                             preferences[(i, n1, n2, en)]
 
             path = networkx.shortest_path(G, source = start, target = end, weight = 'c')
