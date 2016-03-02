@@ -49,7 +49,7 @@ for tax in ([lambda x : 0, lambda x : 0], [lambda x : x, lambda x : 0]):
         costs.append(rcost)
 
     plt.plot(bs, costs)
-    plt.xlabel('Bias towards driving on road 2')
+    plt.xlabel('Bias away from driving on road 1')
     plt.ylabel('Resultant cost')
     plt.title('Results given a constant bias')
 plt.legend(['No taxes', 'With Pigou taxes'])
@@ -65,7 +65,8 @@ for rngName, rng, biases in [('Exponential', lambda x : x * numpy.random.exponen
         costs = []
         for b in biases:
             biases2 = [rng(b) for i in range(N)]
-            bias = [lambda i : 0, lambda i : biases2[i]]#
+
+            bias = [lambda i : biases2[i], lambda i : 0]#
             if taxNumber == 0:
                 tax = [lambda x : 0, lambda x : 0]
             elif taxNumber == 1:
@@ -74,6 +75,7 @@ for rngName, rng, biases in [('Exponential', lambda x : x * numpy.random.exponen
                 tax = [lambda x : b, lambda x : 0]
             else:
                 tax = [lambda x : x + b, lambda x : 0]
+
             rcost, edgeResults, backtrack, converged = acyclic_game_NE.runRound(edges, start, end, cost, tax, bias, N)
 
             bs.append(b)
@@ -81,7 +83,7 @@ for rngName, rng, biases in [('Exponential', lambda x : x * numpy.random.exponen
 
         plt.plot(bs, costs)
 
-    plt.xlabel('Average bias to drive on road 2 for a given population')
+    plt.xlabel('Average bias away from driving on road 1 for a given population')
     plt.ylabel('Resultant cost')
     plt.ylim(0.75, 1.01)
     plt.title('Results given a random ({0}) scaled bias to drive on road 2'.format(rngName))
@@ -116,7 +118,7 @@ for rngName, rng, biases in [('Exponential', lambda x : x * numpy.random.exponen
 # Varying random bias on both roads
 N = 100
 for rngName, rng, biases in [('Exponential', lambda x : x * numpy.random.exponential(), numpy.linspace(0.0, 1.5, 11)),
-                     ('Gaussian varying mean', lambda x : max(0.0, numpy.random.normal(loc = x, scale = 1.0)), numpy.linspace(0.0, 1.5, 11))]:
+                     ('Clamped > 0 gaussian w/ varying mean', lambda x : max(0.0, numpy.random.normal(loc = x, scale = 1.0)), numpy.linspace(0.0, 1.5, 11))]:
 
     for taxNumber in range(4):
         bs = []
@@ -147,8 +149,8 @@ for rngName, rng, biases in [('Exponential', lambda x : x * numpy.random.exponen
         plt.xticks(range(11), bs1)
         plt.yticks(range(11), bs2)
         plt.colorbar()
-        plt.xlabel('Average bias toward road 1')
-        plt.ylabel('Average bias toward road 2')
+        plt.xlabel('Average bias away from road 1')
+        plt.ylabel('Average bias away from road 2')
         plt.title(['No taxes ({0})'.format(rngName), 'With Pigou taxes ({0})'.format(rngName), 'With bias taxes ({0})'.format(rngName), 'With both taxes'][taxNumber])
         plt.show()
 

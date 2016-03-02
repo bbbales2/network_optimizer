@@ -24,7 +24,7 @@ tax = [lambda x : 0, lambda x : 0, lambda x : 0]
 
 N = 100
 
-R = 10
+R = 1
 
 preferences = {}
 edgeResults = {}
@@ -34,7 +34,7 @@ for i in range(N):
     for n1 in G.edge:
         for n2 in G.edge[n1]:
             for en in G.edge[n1][n2]:
-                preferences[(i, n1, n2, en)] = numpy.random.exponential()
+                preferences[(i, n1, n2, en)] = 0.0#numpy.random.exponential()
 
 for r in range(R):
     for n1 in G.edge:
@@ -43,19 +43,29 @@ for r in range(R):
                 G.edge[n1][n2][en]['f'] = 0.0
 
     order = range(N)
-    numpy.random.shuffle(order)
+    #numpy.random.shuffle(order)
     for i in order:
         for n1 in G.edge:
             for n2 in G.edge[n1]:
                 for en in G.edge[n1][n2]:
-                    G.edge[n1][n2][en]['c'] = cost[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
+                    G.edge[n1][n2][en]['c'] = cost[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f'] / (i / 121.0 + 1e-5)) + \
                                         tax[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
                                         preferences[(i, n1, n2, en)]
+
+        #print G.edge
+        #if i == 1:
+        #    1/0
 
         path = networkx.shortest_path(G, source = start, target = end, weight = 'c')
 
         for n1, n2 in list(zip(path[:-1], path[1:])):
             sorted(G.edge[n1][n2].values(), key = lambda x : x['c'])[0]['f'] += 1.0 / N
+
+        for n1, n2 in set(G.edges()):
+            for edgeData in G.get_edge_data(n1, n2).values():
+                print u"Edge ({0}, {1}), type {2}, flow {3}, cost {4}".format(n1, n2, edgeData['t'], edgeData['f'], edgeData['c'])
+
+        print '----'
 
     totalc = 0.0
     for n1, n2 in set(G.edges()):
