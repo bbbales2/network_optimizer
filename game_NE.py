@@ -17,20 +17,21 @@ def runRound(edges, start, end, cost, tax, biases, N, debug = False):
     for i, (n1, n2, edgeData) in enumerate(edges):
         edgeData['id'] = i
 
-    G = networkx.MultiGraph()
+    G = networkx.Graph()
     G.add_edges_from(edges)
+
+    #print G.edge
+    #print G.edge[0]
 
     for i in range(N):
         for n1 in G.edge:
             for n2 in G.edge[n1]:
-                for en in G.edge[n1][n2]:
-                    preferences[(i, n1, n2, en)] = biases[G.edge[n1][n2][en]['id']](i)
+                preferences[(i, n1, n2)] = biases[G.edge[n1][n2]['id']](i)
 
     #zero the graph edges to start
     for n1 in G.edge:
         for n2 in G.edge[n1]:
-            for en in G.edge[n1][n2]:
-                G.edge[n1][n2][en]['f'] = 0.0
+            G.edge[n1][n2]['f'] = 0.0
 
     # we need to preserve the balance of edges at the end of the round. becuas I should change my mind just because the flow changed...
     # If I change my mind, remove myself from the previous
@@ -54,17 +55,16 @@ def runRound(edges, start, end, cost, tax, biases, N, debug = False):
         numpy.random.shuffle(order)
         for i in order:
             if i in aPrev:
-                for n1, n2, betterEdgeIdx in aCur[i]:
-                    G.edge[n1][n2][betterEdgeIdx]['f'] -= 1.0 / N
+                for n1, n2 in aCur[i]:
+                    G.edge[n1][n2]['f'] -= 1.0 / N
 
             for n1 in G.edge:
                 for n2 in G.edge[n1]:
-                    for en in G.edge[n1][n2]:
-                        G.edge[n1][n2][en]['c'] = cost[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
-                                            tax[G.edge[n1][n2][en]['t']](G.edge[n1][n2][en]['f']) + \
-                                            preferences[(i, n1, n2, en)]
+                    G.edge[n1][n2]['c'] = cost[G.edge[n1][n2]['t']](G.edge[n1][n2]['f']) + \
+                                            tax[G.edge[n1][n2]['t']](G.edge[n1][n2]['f']) + \
+                                            preferences[(i, n1, n2)]
 
-            paths = networkx.all_simple_path(G, source = start, target = end)
+            paths = networkx.all_simple_paths(G, source = start, target = end)
 
             pathCosts = []
 
@@ -72,34 +72,29 @@ def runRound(edges, start, end, cost, tax, biases, N, debug = False):
                 c = 0
                 edges = zip(path[:-1], path[1:])
 
-                for n0, n1 in zip
+                for n0, n1 in edges:
+                    c += G.edge[n0][n1]['c']
 
-            pEdge=list(zip(path[:-1], path[1:]))
-            pEdge.sort()
+                pathCosts.append((c, edges))
 
-            fullEdges = []
-            for n1, n2 in pEdge: #loop over the path increasing flow
-            # It's possible there are two paths from one node to another, we must choose the better one
-                betterEdgeIdx, betterEdgeData = sorted(G.edge[n1][n2].items(), key = lambda x : x[1]['c'])[0]
+            pEdge = sorted(pathCosts, key = lambda x : x[0])[0][1]
 
-                fullEdges.append((n1, n2, betterEdgeIdx))
+            aCur[i] = pEdge
 
-            aCur[i] = fullEdges
-
-            for n1, n2, betterEdgeIdx in aCur[i]:
-                G.edge[n1][n2][betterEdgeIdx]['f'] += 1.0 / N
+            for n1, n2 in aCur[i]:
+                G.edge[n1][n2]['f'] += 1.0 / N
 
             totalc = 0.0
             edgeResults = {}
             for n1, n2 in set(G.edges()):
-                for edgeIdx, edgeData in G.edge[n1][n2].items():
-                    key = (n1, n2, edgeIdx)
+                edgeData = G.edge[n1][n2]
+                key = (n1, n2)
 
-                    edgeResults[key] = edgeData['f'], edgeData['t']
-                    totalc += edgeData['f'] * cost[edgeData['t']](edgeData['f'])
+                edgeResults[key] = edgeData['f'], edgeData['t']
+                totalc += edgeData['f'] * cost[edgeData['t']](edgeData['f'])
 
             if debug:
-                for (n1, n2, t), (f, t) in edgeResults.items():
+                for (n1, n2), (f, t) in edgeResults.items():
                     print u"Edge ({0}, {1}), type {2}, flow {3}".format(n1, n2, t, f)
 
                 print '----'
@@ -121,21 +116,23 @@ def runRound(edges, start, end, cost, tax, biases, N, debug = False):
 
 if __name__ == '__main__':
     #bias = lambda : 0
+    edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+         (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 2 }),
+         (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 2 }),
+         (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+         (1, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 0 })]
     #edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-    #     (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
-    #     (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
-    #     (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-    #     (1, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 2 })]
-    edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-             (0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 1 })]
+    #         (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
+    #         (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+    #         (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 2 })]
 
-    bias = [lambda i : 0, lambda i : 1.0]#numpy.random.exponential
+    bias = [lambda i : 0, lambda i : 0, lambda i : 0, lambda i : 0.0, lambda i : 0.0]#numpy.random.exponential
 
-    cost = [lambda x : x, lambda x : 1.00, lambda x : 0]
-    tax = [lambda x : 0, lambda x : 0, lambda x : 0]
+    cost = [lambda x : 0, lambda x : x, lambda x : 1.00]
+    tax = [lambda x : 0, lambda x : x, lambda x : 0]
 
     start = 0
-    end = 1
+    end = 3
 
     N = 100 #number of players
     print runRound(edges, start, end, cost, tax, bias, N, True)
