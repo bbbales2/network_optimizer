@@ -17,7 +17,7 @@ def runRound(edges, start, end, cost, tax, biases, N, debug = False):
     for i, (n1, n2, edgeData) in enumerate(edges):
         edgeData['id'] = i
 
-    G = networkx.Graph()
+    G = networkx.DiGraph()
     G.add_edges_from(edges)
 
     #print G.edge
@@ -116,23 +116,23 @@ def runRound(edges, start, end, cost, tax, biases, N, debug = False):
 
 if __name__ == '__main__':
     #bias = lambda : 0
-    edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
-         (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 2 }),
-         (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 2 }),
-         (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
-         (1, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 0 })]
-    #edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-    #         (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
-    #         (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
-    #         (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 2 })]
+    #edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+    #     (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 2 }),
+    #     (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 2 }),
+    #     (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+    #     (1, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 0 })]
+    edges = [(0, 1, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
+             (0, 2, { 'f' : 0.0, 'c' : 0.0, 't' : 0 }),
+             (1, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 1 }),
+             (2, 3, { 'f' : 0.0, 'c' : 0.0, 't' : 2 })]
 
     bias = [lambda i : 0, lambda i : 0, lambda i : 0, lambda i : 0.0, lambda i : 0.0]#numpy.random.exponential
 
     cost = [lambda x : 0, lambda x : x, lambda x : 1.00]
-    tax = [lambda x : 0, lambda x : x, lambda x : 0]
+    tax = [lambda x : 0, lambda x : 0, lambda x : 0]
 
     start = 0
     end = 3
 
     N = 100 #number of players
-    print runRound(edges, start, end, cost, tax, bias, N, True)
+    print runRound(edges, start, end, cost, tax, bias, N)
