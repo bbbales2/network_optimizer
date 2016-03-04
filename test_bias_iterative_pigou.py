@@ -26,8 +26,38 @@ a = 1.0
 b = 0
 
 N = 100 #number of players
-R = 10
-ps = numpy.linspace(0, 1, 10)
+R = 100
+ps = numpy.linspace(0, 1, 11)
+costs = numpy.zeros((R, len(ps)))
+for r in range(R):
+    for pi, p in enumerate(ps):
+        biases1 = [dist(p) for i in range(N)]
+
+        bias = [lambda i : 0, lambda i : 0, lambda i : biases1[i], lambda i : 0]
+
+        cost = [lambda x : 0, lambda x : x, lambda x : 1.00]
+        tax = [lambda x : 0, lambda x : 0, lambda x : 0]
+
+        start = 0
+        end = 3
+
+        totalc, edgeResults, backtrack, converged = game_NE.runRound(edges, start, end, cost, tax, bias, N)
+        if not converged:
+            raise Exception("Equilibrium didn't converge")
+        costs[r, pi] = totalc
+
+plt.boxplot(numpy.array(costs) / 0.75)
+plt.xticks(numpy.arange(len(ps)) + 1, ['{:0.2f}'.format(p) for p in ps])
+plt.xlabel('Parameter p of distribution')
+plt.ylabel('Cost of Anarchy with no tax')
+plt.ylim(1.0, 4.0 / 3.0)
+plt.show()
+
+#%%
+
+N = 100 #number of players
+R = 100
+ps = numpy.linspace(0, 1, 11)
 costs = numpy.zeros((R, len(ps)))
 for r in range(R):
     for pi, p in enumerate(ps):
@@ -49,7 +79,7 @@ for r in range(R):
 plt.boxplot(numpy.array(costs) / 0.75)
 plt.xticks(numpy.arange(len(ps)) + 1, ['{:0.2f}'.format(p) for p in ps])
 plt.xlabel('Parameter p of distribution')
-plt.ylabel('Cost of Anarchy')
+plt.ylabel('Cost of Anarchy with Pigou Tax')
 plt.ylim(1.0, 4.0 / 3.0)
 plt.show()
 
