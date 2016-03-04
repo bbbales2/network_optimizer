@@ -1,0 +1,91 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\begin{document}
+
+\title{ECE 594 D project}
+\author{Scott Cesar}
+\date{3-1-16}
+\maketitle
+
+\section{Pigou's network with Biases}
+Consider a model of flow where units of flow have a bias for each potential route.\\
+Let this bias be characterized as a Bernoulli process such that the bias for a route $i$ is either $a_i$ or $b_i$ with probability $p_i$.\\
+Pigous network presents 2 routes, $r_1$ and $r_2$.\\
+The cost on each edge is:
+\[c_1(x) = x\]
+\[c_2(x) =1\]
+We can denote the effect of the biases in aggregate by $B_i(x)$ meaning the contribution of a bias given a certain amount of flow.\\
+The Nash equilibrium is then 
+\[\min_x \int_0^x (c_1(x) +B_1(x))dx +  \int_0^{1-x}(c_2(x) +B_2(x))dx\]
+Which can be minimized by setting the derivative to 0 and solving:
+\[ c_1(x) +B_1(x) +  c_2(1-x) +B_2(1-x)\]
+
+Then note that the bias function is unknown.\\
+Because the biases are Bernoulli distributions, the population falls into one of four classes:\\
+\[P(a_1a_2) =p_1p_2\]
+\[P(a_1b_2) =p_1(1-p_2)\]
+\[P(b_1a_2) =(1-p_1)p_2\]
+\[P(b_1b_2) =(1-p_1)(1-p_2)\]
+
+Then we can separate the flow based on which section of the population it belongs to yielding A vector equation:\\
+\[x= \left[ \begin{array}{c} x_1 \\x_2\\x_3\\x_4 \end{array}\right]\]
+Where the bounds:
+\[0 \leq x_1 \leq p_1p_2\]
+\[0 \leq x_2 \leq p_1(1-p_2)\]
+\[0 \leq x_3 \leq (1-p_1)p_2\]
+\[0 \leq x_4 \leq (1-p_1)(1-p_2)\]
+or
+\[v = \left[ \begin{array}{c} p_1p_2 \\p_1(1-p_2)\\(1-p_1)p_2\\(1-p_1)(1-p_2) \end{array}\right]  \]
+\[0 \leq x \leq v\]
+Hold.
+\[B_1(x) = [a_1,a_1,b_1,b_1] \cdot x\]
+\[B_1(x) = [a_2,b_2,a_2,b_2] \cdot x\]
+define
+\[B_1=  [a_1,a_1,b_1,b_1]\]
+\[B_2 =  [a_2,b_2,a_2,b_2]\]
+Which yields a new cost function:
+\[c_1(x) = [1,1,1,1] \cdot x\]
+\[c_2(x) =1\]
+
+
+
+The total traffic along each branch is bounded by:
+\[\min_x \int_0^x (c_1(x) +B_1(x))dx +  \int_0^{v-x}(c_2(x) +B_2(x))dx\]
+Assuming this vector valued integral is possible (Blithely) Then taking the derivative and setting it to 0 we get:
+\[ c_1(x) +B_1(x) + c_2(x-v) +B_2(x-v) = 0 \]
+\[  [1,1,1,1] \cdot x + B_1 \cdot x  +B_2\cdot (x-v) -1 =0\]
+\[  [1,1,1,1] \cdot x + B_1 \cdot x  -B_2\cdot v +B_2 \cdot x -1 =0\]
+\[  (1+ B_1 +B_2) \cdot x - b_2\cdot v -1 =0\]
+
+\[b_2 \cdot v = a_2(p_1p_2)+ b_2p_1(1-p_2)+a_2(1-p_1)p_2 + b_2(1-p_1)(1-p_2) \]\[= a_2p_2(p_1+1-p_1) +b_2(1-p_2)(p_1+1-p_1) = a_2p_2 +b_2(1-p_2)\]
+
+\[  (1+ B_1 +B_2) \cdot x -( a_2p_2 +b_2(1-p_2)) = 1\]
+\section{}
+New theories: bias can't be joined as a function of traffic? Should be possible. A person applies their specific bias, so other people do not influence the performance of the bias: the Nash equilibria is determined by my individual bias  and the current allocation of people. Then traffic is constrained by a new set of constraints:
+No more traffic of a type $x_1,x_2,x_3,x_4$ can flow on branch 1 if this inequality fails:
+ \[x_1: x_1+x_2+x_3+x_4 + a_1  < 1+a2 \]
+ \[x_2:x_1+x_2+x_3+x_4+ a_1  < 1+b2 \]
+ \[x_3: x_1+x_2+x_3+x_4 + b_1  < 1+a2 \]
+ \[x_4: x_1+x_2+x_3+x_4 + b_1  < 1+b2 \]
+ 
+That is to say if the total cost of path 1 including the traffic types bias exceeds that of path 2, no more traffic of that type can flow.\\
+ \[x_1: x_1+x_2+x_3+x_4   < 1+a_2 -a_1 \]
+ \[x_2:x_1+x_2+x_3+x_4  < 1+b_2 -a_1 \]
+ \[x_3: x_1+x_2+x_3+x_4  < 1+a_2-b_1 \]
+ \[x_4: x_1+x_2+x_3+x_4  < 1+b_2 -b_1 \]
+Then these constraints are still subject to \[0 \leq x \leq v\] as well.\\
+ The Nash equilibria are any sets which satisfy this constraint.\\
+ The optimal Nash equilibria would be one which minimizes the global cost as well, $\min_{x\in NE} c_1(x) + c_2(1-x)$.\\ This might be mostly irrelevant? can't actually force the evolution of an optimal NE.\\
+ Then in this model of Constraining the NE a tax function manifests in the form:
+ \[x_1: c_1(x) +t(x)   < c_2(1-x)+t_2(1-x)+a_2 -a_1 \]
+ \[x_2:c_1(x)+t(x) < c_2(1-x)+t_2(1-x)+b_2 -a_1 \]
+ \[x_3: c_1(x)+t(x)  < c_2(1-x)+t_2(1-x)+a_2-b_1 \]
+ \[x_4: c_1(x)+t(x)  < c_2(1-x)+t_2(1-x)+b_2 -b_1 \]
+ 
+ \section{Generalizing}
+ Then for a general game with more than two paths and discrete biases 
+\end{document}
