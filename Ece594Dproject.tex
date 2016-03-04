@@ -86,6 +86,19 @@ Then these constraints are still subject to \[0 \leq x \leq v\] as well.\\
  \[x_3: c_1(x)+t(x)  < c_2(1-x)+t_2(1-x)+a_2-b_1 \]
  \[x_4: c_1(x)+t(x)  < c_2(1-x)+t_2(1-x)+b_2 -b_1 \]
  
+ Then the goal of a tax is to minimize this feasible region over the game until this holds:
+ \subsection{Actual optimum}
+ The actual optimum is given by minimizing the total cost of this function: \[\min_{\vec x} \sum_{e \in G} \vec x_e c_e(\vec x_e)\] which represents the costs paid for routing $\vec x_e$ traffic across an edge $e$ times the amount of traffic routed across $e$\\ which in Pigou's network is minimizing \[\min_x x c_1(x) + (1-x)c_2(1-x)\]
+ \[\min_x = x^2 + x\]
+ \[\Rightarrow 2x +1 =0\]
+ \[x = .5\]
+ \[ \min_{\vec x} \sum_{e \in G} \vec x_e c_e(\vec x_e) = .75 \] 
+ 
+ \subsection{Optimal Taxing}
+Then we can state the definition of an optimal tax is one where
+the feasible set $\mathcal N$ of the game (it's Nash Equilibria)  is equal to the optimal solution:
+\[ \mathcal N(\vec x, \vec c, \vec t, \vec b) = \min_{\vec x} \sum_{e \in G}  \vec x_e c_e(\vec x_e) \]
+
  \section{Generalizing}
  Then for a general game with more than two paths and discrete biases 
 \end{document}
