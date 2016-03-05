@@ -85,6 +85,12 @@ Then these constraints are still subject to \[0 \leq x \leq v\] as well.\\
  \[x_2:c_1(x)+t(x) < c_2(1-x)+t_2(1-x)+b_2 -a_1 \]
  \[x_3: c_1(x)+t(x)  < c_2(1-x)+t_2(1-x)+a_2-b_1 \]
  \[x_4: c_1(x)+t(x)  < c_2(1-x)+t_2(1-x)+b_2 -b_1 \]
+ This can be characterized as $\mathcal N(X, \vec c, \vec t, \vec b)$\\
+ Where:\\
+  $X$ is the matrix of edges $\times$ bias states for all the edges of the network.\\
+ $\vec c$ is the vector of cost functions for each edge\\
+ $\vec t$ is the vector of tax functions for each edge\\
+ $\vec b$ is the vector of bias functions for each edge\\
  
  Then the goal of a tax is to minimize this feasible region over the game until this holds:
  \subsection{Actual optimum}
@@ -97,8 +103,39 @@ Then these constraints are still subject to \[0 \leq x \leq v\] as well.\\
  \subsection{Optimal Taxing}
 Then we can state the definition of an optimal tax is one where
 the feasible set $\mathcal N$ of the game (it's Nash Equilibria)  is equal to the optimal solution:
-\[ \mathcal N(\vec x, \vec c, \vec t, \vec b) = \min_{\vec x} \sum_{e \in G}  \vec x_e c_e(\vec x_e) \]
-
+\[ \mathcal N(X, \vec c, \vec t, \vec b) = \min_{\vec x} \sum_{e \in G}  \vec x_e c_e(\vec x_e) \]
+Then we apply this to the Bernoulli pigou's game, simplifying the $\mathcal N$ given previously to:
+ \[\left[\begin{array} {c} x_1: c_1(x)    < c_2(1-x)+t_2(1-x)-t(x)+a_2 -a_1 \\ 
+ x_2: c_1(x) < c_2(1-x)+t_2(1-x)-t(x)+b_2 -a_1  \\
+  x_3: c_1(x)  < c_2(1-x)+t_2(1-x)-t(x)+a_2-b_1  \\
+   x_4: c_1(x)  < c_2(1-x)+t_2(1-x)-t(x)+b_2 -b_1 \end{array} \right]  =  x \rightarrow .75 \]
+   This becomes: the conditions:
+\[\left[\begin{array} {c}
+    x_1: c_1(x)    < c_2(1-x)+t_2(1-x)-t(x)+a_2 -a_1 \leq .75 \\ 
+ x_2: c_1(x) < c_2(1-x)+t_2(1-x)-t(x)+b_2 -a_1 \leq .75  \\
+  x_3: c_1(x)  < c_2(1-x)+t_2(1-x)-t(x)+a_2-b_1 \leq .75 \\
+   x_4: c_1(x)  < c_2(1-x)+t_2(1-x)-t(x)+b_2 -b_1 \leq .75 \end{array} \right]
+   \] 
  \section{Generalizing}
  Then for a general game with more than two paths and discrete biases 
+ 
+ \section{Motivating example}
+ Consider a game where 
+ \[a_1 = a_2 = .25\]\[b_1 = b2 =.75\]
+ \[p_1=p_2 = .5\]
+ 
+ Which yields the constraints:
+ \[v = \left[ \begin{array}{c}.25 \\ .25 \\ .25\\ .25 \end{array}\right]  \]
+\[0 \leq x \leq v\]
+ \[x_1: x_1+x_2+x_3+x_4   < 1 \]
+ \[x_2:x_1+x_2+x_3+x_4  < 1.5 \]
+ \[x_3: x_1+x_2+x_3+x_4  < .5 \]
+ \[x_4: x_1+x_2+x_3+x_4  < 1 \]
+ and attempts to minimize perceived cost: 
+\[ \min_x \int_0^x c_1(x) dx + \int_0^(1-x) c_2(x)dx\]
+\[ \Rightarrow c_1(x) - c_2(x-1) =0\] 
+subject to these constraints.
+As x is minimized at $x=1$ in this case, which is larger than any feasible set for the players, we can treat it as finding the maximal $x$ which is supported by the nash equilibria which is $.75$. Empirical tests match this conclusion.
+
+
 \end{document}
